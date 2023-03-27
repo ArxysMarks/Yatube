@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import CommentForm, PostForm
 from .models import Comment, Follow, Group, Post, User
 from .utilits import get_page_context
-from yatube.constants import SYMBOLS_TITLE_POST 
+from yatube.constants import SYMBOLS_TITLE_POST
 
 
 def index(request):
