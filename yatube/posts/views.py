@@ -1,11 +1,10 @@
-
-from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Group, Post, User, Comment, Follow
-from .forms import PostForm, CommentForm
+from .forms import CommentForm, PostForm
+from .models import Comment, Follow, Group, Post, User
 from .utilits import get_page_context
+from yatube.constants import SYMBOLS_ON_POST
 
 
 def index(request):
@@ -22,13 +21,10 @@ def index(request):
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all().order_by('-pub_date')
-    title = 'Здесь будет информация о группах Yatube'
-    description = group.description
     page_obj = get_page_context(posts, request)
     context = {
-        'title': title,
         'group': group,
-        'description': description,
+        'description': group.description,
         'posts': posts,
         'page_obj': page_obj,
     }
@@ -58,13 +54,13 @@ def profile(request, username):
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     posts_count = Post.objects.filter(author=post.author).count()
-    post_title = str(post)
+    title = post.text[SYMBOLS_ON_POST]
     comments = Comment.objects.filter(post=post)
     form = CommentForm(request.POST or None)
     context = {
         'post': post,
         'posts_count': posts_count,
-        'post_title': post_title,
+        'title': title,
         'comments': comments,
         'form': form,
     }
@@ -84,7 +80,6 @@ def post_create(request):
 
 @login_required
 def post_edit(request, post_id):
-    is_edit = True
     post = get_object_or_404(Post, pk=post_id)
     form = PostForm(request.POST or None, instance=post,
                     files=request.FILES or None)
@@ -93,7 +88,7 @@ def post_edit(request, post_id):
         post = form.save()
         return redirect('posts:post_detail', post_id)
     return render(request, 'posts/create_post.html',
-                  {'form': form, 'is_edit': is_edit, 'post': post})
+                  {'form': form, 'is_edit': True, 'post': post})
 
 
 @login_required
@@ -112,7 +107,7 @@ def add_comment(request, post_id):
 def follow_index(request):
     posts = Post.objects.filter(author__following__user=request.user)
     page_obj = get_page_context(posts, request)
-    context = {"page_obj": page_obj}
+    context = {'page_obj': page_obj}
     return render(request, 'posts/follow.html', context)
 
 
@@ -122,11 +117,11 @@ def profile_follow(request, username):
     user = request.user
     if author != user:
         Follow.objects.get_or_create(user=user, author=author)
-    return redirect("posts:profile", username=username)
+    return redirect('posts:profile', username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
     user = request.user
     Follow.objects.filter(user=user, author__username=username).delete()
-    return redirect("posts:profile", username=username)
+    return redirect('posts:profile', username=username)

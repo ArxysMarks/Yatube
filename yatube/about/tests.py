@@ -1,6 +1,7 @@
 # staticpages/tests/test_urls.py
-from django.test import TestCase, Client
 from http import HTTPStatus
+
+from django.test import Client, TestCase
 
 
 class StaticPagesURLTests(TestCase):

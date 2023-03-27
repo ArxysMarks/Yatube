@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+
 from yatube.constants import SYMBOLS_ON_POST
+
 User = get_user_model()
 
 
